@@ -1,21 +1,14 @@
-let currentPayload = null;
+class flashTrack{
+    constructor(){
+        this.url = window.location.href
+        this.referrer = document.referrer || 'Direct'
+        this.screenResolution = `${window.screen.width}x${window.screen.height}`
+        this.timestamp = new Date().toISOString()
 
-export function initTracker(options = {}) {
-  currentPayload = {
-    url: window.location.href,
-    referrer: document.referrer || 'Direct',
-    screenResolution: `${window.screen.width}x${window.screen.height}`,
-    timestamp: new Date().toISOString(),
-    ...options
-  };
+    }
 
-  console.log('📊 [Analytics Tracker Initialized]:', currentPayload);
-  
-  // Return the payload immediately so caller gets access right away
-  return currentPayload;
-}
+} 
 
-// Optional helper function to retrieve the current payload anytime later
-export function getPayload() {
-  return currentPayload;
+export function tracker(config) {
+  return new flashTrack(config);
 }

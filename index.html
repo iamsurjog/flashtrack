@@ -5,21 +5,10 @@
     <title>Analytics Test Site</title>
     
     <script type="module">
-        import { initTracker, getPayload } from './tracker.js';
+        import { tracker } from './tracker.js';
 
-        // Method 1: Access payload directly from the return value
-        const analyticsData = initTracker({ appName: 'My Dev Test Site' });
-
-        // Work with specific properties
-        console.log('Current URL:', analyticsData.url);
-        console.log('Screen size:', analyticsData.screenResolution);
-
-        // Example: Display data on page or log specific fields
-        document.addEventListener('DOMContentLoaded', () => {
-          // Method 2: Retrieve payload anytime later
-          const data = getPayload();
-          document.getElementById('output').textContent = JSON.stringify(data, null, 2);
-        });
+        const track = tracker()
+        console.log(track.url)
     </script>
 </head>
 <body>
