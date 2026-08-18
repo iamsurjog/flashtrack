@@ -7,7 +7,8 @@
     <script type="module">
         import { tracker } from './tracker.js';
 
-        const track = tracker()
+        // Example of passing custom get list
+        const track = tracker({userAgent: navigator.userAgent} , {})
         console.log(track.url)
         document.getElementById("output").textContent = JSON.stringify(track, null, 4)
     </script>
