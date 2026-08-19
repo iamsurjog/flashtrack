@@ -1,20 +1,42 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <title>Analytics Test Site</title>
-    
+
     <script type="module">
-        import { tracker } from './tracker.js';
+        import {tracker} from './tracker.js';
 
         // Example of passing custom get list
-        const track = tracker({userAgent: navigator.userAgent} , {})
+        const track = tracker({userAgent: navigator.userAgent}, {
+            click: (e) => {
+                return {
+                    clickedText: e?.target?.innerText || 'No text',
+                    xPos: e.clientX,
+                    yPos: e.clientY
+                };
+            }
+        })
         console.log(track.url)
         document.getElementById("output").textContent = JSON.stringify(track, null, 4)
+
+
+        // Hook into the mouseMove event
+        track.on('click', (data) => {
+            console.log(` Clicked on: text: ${data.clickedText}, at X: ${data.xPos}, Y: ${data.yPos}`);
+        });
+        track.on('mouseMove', (coords) => {
+            // console.log(`Mouse moved to: X: ${coords.x}, Y: ${coords.y}`);
+            document.getElementById("listener").textContent = `Mouse moved to: ${coords.x}, ${coords.y} at time: ${coords.timestamp}, hovering: ${coords.element}`
+        });
     </script>
 </head>
+
 <body>
     <h1>Testing ES Module Analytics</h1>
     <pre id="output"></pre>
+    <p id="listener"></p>
 </body>
+
 </html>
