@@ -21,14 +21,56 @@
         console.log(track.url)
         document.getElementById("output").textContent = JSON.stringify(track, null, 4)
 
+        //Making backend call for initial data handshake
+        async function startTracking() {
+            try {
+                const response = await fetch('http://localhost:3001/init', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(track)
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Server returned ${response.status}`)
+                }
+                const {id} = await response.json();
+                return id;
+
+            } catch (err) {
+                console.error("EROOR: ", err);
+            }
+        }
+
+        const sessionId = await startTracking();
 
         // Hook into the mouseMove event
         track.on('click', (data) => {
+            if (!sessionId) return;
+            fetch('http://localhost:3001/track', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({type: "click", sessionId, ...data})
+            });
             console.log(` Clicked on: text: ${data.clickedText}, at X: ${data.xPos}, Y: ${data.yPos}`);
         });
-        track.on('mouseMove', (coords) => {
-            // console.log(`Mouse moved to: X: ${coords.x}, Y: ${coords.y}`);
-            document.getElementById("listener").textContent = `Mouse moved to: ${coords.x}, ${coords.y} at time: ${coords.timestamp}, hovering: ${coords.element}`
+
+        let lastMove = 0;
+        track.on('mouseMove', (data) => {
+
+            const now = Date.now();
+            if (now - lastMove < 150) return; // Only send once every 150ms
+            lastMove = now;
+
+            console.log(`Mouse moved to: ${data.x}, ${data.y} at time: ${data.timestamp}, hovering: ${data.element}`);
+
+
+            if (!sessionId) return;
+            fetch('http://localhost:3001/track', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({type: "mouseMove", sessionId, ...data})
+            });
+            // document.getElementById("listener").textContent = `Mouse moved to: ${coords.x}, ${coords.y} at time: ${coords.timestamp}, hovering: ${coords.element}`
         });
     </script>
 </head>

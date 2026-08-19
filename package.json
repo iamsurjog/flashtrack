@@ -9,5 +9,11 @@
     "scripts": {
         "test": "echo \"Error: no test specified\" && exit 1",
         "dev": "npx serve ."
+    },
+    "dependencies": {
+        "better-sqlite3": "^13.0.3",
+        "cors": "^2.8.6",
+        "express": "^5.2.1",
+        "uuid": "^14.0.2"
     }
 }
