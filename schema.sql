@@ -1,2 +1,2 @@
-CREATE TABLE sessions ( id INTEGER PRIMARY KEY AUTOINCREMENT, info TEXT);
-CREATE TABLE watchData(sessionId INT, type TEXT, info TEXT, Foreign Key (sessionId) references sessions (id))
+CREATE TABLE sessions ( id TEXT PRIMARY KEY, info TEXT);
+CREATE TABLE watchData(sessionId TEXT, type TEXT, info TEXT, Foreign Key (sessionId) references sessions (id))
