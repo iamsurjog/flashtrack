@@ -1,0 +1,997 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FlashTrack Dashboard</title>
+    <style>
+        :root {
+            --bg: #0b0f17;
+            --card: #121826;
+            --card-border: #1e293b;
+            --text: #e2e8f0;
+            --muted: #8494ab;
+            --accent: #5b8cff;
+            --click: #ff6b6b;
+            --move: #4dd0e1;
+            --green: #34d399;
+            --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+            font-size: 14px;
+            padding: 20px 24px 48px;
+        }
+
+        /* ---------- Header ---------- */
+        header {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+
+        header h1 {
+            font-size: 20px;
+            font-weight: 700;
+            letter-spacing: 0.3px;
+        }
+
+        header h1 span { color: var(--accent); }
+
+        .header-controls {
+            margin-left: auto;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            flex-wrap: wrap;
+        }
+
+        #status {
+            color: var(--muted);
+            font-size: 12px;
+        }
+
+        #status.error { color: var(--click); }
+
+        button {
+            background: var(--accent);
+            border: none;
+            color: #fff;
+            padding: 7px 16px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        button:hover { filter: brightness(1.15); }
+
+        label.toggle {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            color: var(--muted);
+            font-size: 12px;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        /* ---------- Cards / grid ---------- */
+        .card {
+            background: var(--card);
+            border: 1px solid var(--card-border);
+            border-radius: 10px;
+            padding: 16px;
+        }
+
+        .card h2 {
+            font-size: 13px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            color: var(--muted);
+            margin-bottom: 12px;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .stat {
+            background: var(--card);
+            border: 1px solid var(--card-border);
+            border-radius: 10px;
+            padding: 14px 16px;
+        }
+
+        .stat .label {
+            color: var(--muted);
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            margin-bottom: 6px;
+        }
+
+        .stat .value { font-size: 24px; font-weight: 700; }
+        .stat .sub { color: var(--muted); font-size: 11px; margin-top: 4px; }
+
+        .row {
+            display: grid;
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+
+        .row-2-1 { grid-template-columns: 2fr 1fr; }
+        .row-1-1 { grid-template-columns: 1fr 1fr; }
+
+        @media (max-width: 900px) {
+            .row-2-1, .row-1-1 { grid-template-columns: 1fr; }
+        }
+
+        canvas { width: 100%; display: block; }
+        #timeline { height: 220px; }
+        #heatmap { height: 340px; }
+        #pathCanvas { height: 320px; }
+
+        /* ---------- Breakdown bars ---------- */
+        .bar-row { margin-bottom: 10px; }
+
+        .bar-row .bar-label {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            margin-bottom: 4px;
+        }
+
+        .bar-row .bar-label .count { color: var(--muted); }
+
+        .bar-track {
+            background: #0d1320;
+            border-radius: 4px;
+            height: 8px;
+            overflow: hidden;
+        }
+
+        .bar-fill { height: 100%; border-radius: 4px; }
+
+        /* ---------- Tables ---------- */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+
+        th {
+            text-align: left;
+            color: var(--muted);
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.6px;
+            padding: 6px 10px;
+            border-bottom: 1px solid var(--card-border);
+            white-space: nowrap;
+        }
+
+        td {
+            padding: 7px 10px;
+            border-bottom: 1px solid #161f31;
+            vertical-align: top;
+            max-width: 420px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        tr.session-row { cursor: pointer; }
+        tr.session-row:hover td { background: #161f31; }
+        tr.session-row.selected td { background: rgba(91, 140, 255, 0.12); }
+
+        .mono { font-family: var(--mono); font-size: 12px; }
+        .muted { color: var(--muted); }
+
+        .pill {
+            display: inline-block;
+            padding: 1px 8px;
+            border-radius: 999px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .pill.click { background: rgba(255, 107, 107, 0.15); color: var(--click); }
+        .pill.mouseMove { background: rgba(77, 208, 225, 0.15); color: var(--move); }
+        .pill.other { background: rgba(132, 148, 171, 0.15); color: var(--muted); }
+
+        /* ---------- Event stream controls ---------- */
+        .filters {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+            margin-bottom: 12px;
+        }
+
+        select, input[type="text"] {
+            background: #0d1320;
+            color: var(--text);
+            border: 1px solid var(--card-border);
+            border-radius: 6px;
+            padding: 6px 10px;
+            font-size: 13px;
+        }
+
+        input[type="text"] { min-width: 220px; }
+
+        .table-scroll {
+            max-height: 420px;
+            overflow-y: auto;
+        }
+
+        /* ---------- Session detail ---------- */
+        .meta-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 8px 16px;
+            margin-bottom: 14px;
+            font-size: 12px;
+        }
+
+        .meta-grid .k { color: var(--muted); margin-right: 6px; }
+        .meta-grid .v { font-family: var(--mono); word-break: break-all; }
+
+        .heat-toggles { display: flex; gap: 14px; margin-bottom: 10px; }
+
+        .banner {
+            background: rgba(255, 107, 107, 0.1);
+            border: 1px solid rgba(255, 107, 107, 0.4);
+            color: var(--click);
+            padding: 10px 14px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+            display: none;
+            font-size: 13px;
+        }
+
+        .empty {
+            color: var(--muted);
+            text-align: center;
+            padding: 28px 12px;
+            font-size: 13px;
+        }
+
+        ::-webkit-scrollbar { width: 10px; height: 10px; }
+        ::-webkit-scrollbar-thumb { background: #24304a; border-radius: 5px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+    </style>
+</head>
+
+<body>
+    <header>
+        <h1>⚡ Flash<span>Track</span> Dashboard</h1>
+        <div class="header-controls">
+            <span id="status">Loading…</span>
+            <label class="toggle">
+                <input type="checkbox" id="autoRefresh"> Auto-refresh (10s)
+            </label>
+            <button id="refreshBtn">Refresh</button>
+        </div>
+    </header>
+
+    <div class="banner" id="errorBanner"></div>
+
+    <!-- Stat cards -->
+    <section class="stats" id="stats"></section>
+
+    <!-- Timeline + breakdowns -->
+    <section class="row row-2-1">
+        <div class="card">
+            <h2>Activity Timeline</h2>
+            <canvas id="timeline"></canvas>
+        </div>
+        <div class="card">
+            <h2>Events by Type</h2>
+            <div id="typeBreakdown"></div>
+            <h2 style="margin-top:18px">Browsers</h2>
+            <div id="browserBreakdown"></div>
+        </div>
+    </section>
+
+    <!-- Sessions table -->
+    <section class="row">
+        <div class="card">
+            <h2>Sessions <span class="muted" style="text-transform:none;font-weight:400">(click a row to inspect)</span></h2>
+            <div class="table-scroll">
+                <table id="sessionsTable">
+                    <thead>
+                        <tr>
+                            <th>Session</th>
+                            <th>Started</th>
+                            <th>Duration</th>
+                            <th>Browser</th>
+                            <th>OS</th>
+                            <th>Screen</th>
+                            <th>Referrer</th>
+                            <th style="text-align:right">Clicks</th>
+                            <th style="text-align:right">Moves</th>
+                            <th style="text-align:right">Events</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+
+    <!-- Session detail + heatmap -->
+    <section class="row row-1-1">
+        <div class="card">
+            <h2>Session Detail — Mouse Path &amp; Clicks</h2>
+            <div id="sessionMeta" class="meta-grid"></div>
+            <canvas id="pathCanvas"></canvas>
+            <div class="empty" id="pathEmpty" style="display:none">No events recorded for this session.</div>
+        </div>
+        <div class="card">
+            <h2>Interaction Heatmap <span class="muted" style="text-transform:none;font-weight:400">(all sessions)</span></h2>
+            <div class="heat-toggles">
+                <label class="toggle"><input type="checkbox" id="heatMouse" checked> <span style="color:var(--move)">Mouse moves</span></label>
+                <label class="toggle"><input type="checkbox" id="heatClicks" checked> <span style="color:var(--click)">Clicks</span></label>
+            </div>
+            <canvas id="heatmap"></canvas>
+        </div>
+    </section>
+
+    <!-- Event stream -->
+    <section class="row">
+        <div class="card">
+            <h2>Event Stream</h2>
+            <div class="filters">
+                <select id="filterSession"><option value="">All sessions</option></select>
+                <select id="filterType">
+                    <option value="">All types</option>
+                    <option value="click">click</option>
+                    <option value="mouseMove">mouseMove</option>
+                </select>
+                <input type="text" id="filterSearch" placeholder="Search details… (element text, coords, id)">
+                <span class="muted" id="eventCount" style="margin-left:auto;font-size:12px"></span>
+            </div>
+            <div class="table-scroll">
+                <table id="eventsTable">
+                    <thead>
+                        <tr>
+                            <th>Time</th>
+                            <th>Session</th>
+                            <th>Type</th>
+                            <th>Details</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+
+    <script>
+        // ------------------------------------------------------------------
+        // Config & state
+        // ------------------------------------------------------------------
+        const params = new URLSearchParams(location.search);
+        const API_BASE = params.get('api')
+            || (location.port === '3001' ? '' : 'http://localhost:3001');
+
+        const state = {
+            sessions: [],       // [{id, info}]
+            events: [],         // [{rowId, sessionId, type, info}] chronological
+            selectedSession: null,
+        };
+
+        // ------------------------------------------------------------------
+        // Helpers
+        // ------------------------------------------------------------------
+        const $ = (sel) => document.querySelector(sel);
+        const esc = (s) => String(s ?? '').replace(/[&<>"']/g,
+            c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+        function trunc(s, n = 60) {
+            s = String(s ?? '').replace(/\s+/g, ' ').trim();
+            return s.length > n ? s.slice(0, n) + '…' : s;
+        }
+
+        function shortId(id) {
+            id = String(id);
+            return id.slice(0, 8) + '…' + id.slice(-4);
+        }
+
+        // UUIDv7 embeds a 48-bit ms timestamp in its first 12 hex chars
+        function uuidTime(id) {
+            const ms = Number(BigInt('0x' + String(id).replace(/-/g, '').slice(0, 12)));
+            return Number.isFinite(ms) && ms > 0 ? ms : null;
+        }
+
+        function sessionStart(s) {
+            const t = Date.parse(s.info?.timestamp);
+            return Number.isFinite(t) ? t : (uuidTime(s.id) || 0);
+        }
+
+        function eventTs(e) {
+            const t = Date.parse(e.info?.timestamp);
+            return Number.isFinite(t) ? t : null;
+        }
+
+        const fmtDateTime = (ms) => ms ? new Date(ms).toLocaleString([], {
+            month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit'
+        }) : '—';
+
+        const fmtTime = (ms) => ms ? new Date(ms).toLocaleTimeString([], {
+            hour: '2-digit', minute: '2-digit', second: '2-digit'
+        }) : '—';
+
+        function fmtDur(ms) {
+            if (ms == null || !Number.isFinite(ms) || ms < 0) return '—';
+            const s = Math.round(ms / 1000);
+            if (s < 60) return `${s}s`;
+            const m = Math.floor(s / 60);
+            if (m < 60) return `${m}m ${s % 60}s`;
+            return `${Math.floor(m / 60)}h ${m % 60}m`;
+        }
+
+        function parseUA(ua = '') {
+            let browser = 'Other';
+            const edge = ua.match(/Edg(?:e|A|iOS)?\/([\d.]+)/);
+            const ff = ua.match(/Firefox\/([\d.]+)/);
+            const chrome = ua.match(/Chrome\/([\d.]+)/);
+            const safari = ua.match(/Version\/([\d.]+)[\w.]*\s+Safari/);
+            if (edge) browser = 'Edge ' + edge[1].split('.')[0];
+            else if (ff) browser = 'Firefox ' + ff[1].split('.')[0];
+            else if (chrome) browser = 'Chrome ' + chrome[1].split('.')[0];
+            else if (safari) browser = 'Safari ' + safari[1].split('.')[0];
+
+            let os = 'Other';
+            if (/Windows NT/.test(ua)) os = 'Windows';
+            else if (/Android/.test(ua)) os = 'Android';
+            else if (/iPhone|iPad|iPod/.test(ua)) os = 'iOS';
+            else if (/Mac OS X/.test(ua)) os = 'macOS';
+            else if (/Linux/.test(ua)) os = 'Linux';
+            return { browser, os };
+        }
+
+        function parseRes(res) {
+            const m = String(res || '').match(/(\d+)\s*x\s*(\d+)/i);
+            return m ? { w: +m[1], h: +m[2] } : null;
+        }
+
+        function eventCoords(e) {
+            const i = e.info || {};
+            if (typeof i.xPos === 'number') return { x: i.xPos, y: i.yPos };
+            if (typeof i.x === 'number') return { x: i.x, y: i.y };
+            return null;
+        }
+
+        // Canvas with devicePixelRatio handling; returns ctx + CSS pixel size
+        function prepCanvas(cv) {
+            const dpr = window.devicePixelRatio || 1;
+            const w = cv.clientWidth || 600;
+            const h = cv.clientHeight || 300;
+            if (cv.width !== Math.round(w * dpr) || cv.height !== Math.round(h * dpr)) {
+                cv.width = Math.round(w * dpr);
+                cv.height = Math.round(h * dpr);
+            }
+            const ctx = cv.getContext('2d');
+            ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+            ctx.clearRect(0, 0, w, h);
+            return { ctx, w, h };
+        }
+
+        // ------------------------------------------------------------------
+        // Data loading
+        // ------------------------------------------------------------------
+        async function refresh() {
+            const status = $('#status');
+            try {
+                const res = await fetch(API_BASE + '/api/data');
+                if (!res.ok) throw new Error(`Server returned ${res.status}`);
+                const data = await res.json();
+                state.sessions = data.sessions || [];
+                state.events = data.events || [];
+
+                // Keep or initialize selection (most recent session with events)
+                if (!state.sessions.some(s => s.id === state.selectedSession)) {
+                    const withEvents = state.sessions.filter(s =>
+                        state.events.some(e => e.sessionId === s.id));
+                    state.selectedSession = withEvents.length
+                        ? withEvents[withEvents.length - 1].id
+                        : (state.sessions.at(-1)?.id ?? null);
+                }
+
+                $('#errorBanner').style.display = 'none';
+                status.classList.remove('error');
+                status.textContent = `Updated ${new Date().toLocaleTimeString()} · ${API_BASE || location.origin}/api/data`;
+                renderAll();
+            } catch (err) {
+                status.classList.add('error');
+                status.textContent = 'Connection failed';
+                const banner = $('#errorBanner');
+                banner.style.display = 'block';
+                banner.textContent = `Could not load tracker data from ${API_BASE || location.origin}/api/data — is "node server.mjs" running? (${err.message})`;
+            }
+        }
+
+        // ------------------------------------------------------------------
+        // Renderers
+        // ------------------------------------------------------------------
+        function renderAll() {
+            renderStats();
+            renderTimeline();
+            renderBreakdowns();
+            renderSessionsTable();
+            renderSessionDetail();
+            renderHeatmap();
+            populateSessionFilter();
+            renderEventsTable();
+        }
+
+        function renderStats() {
+            const evts = state.events;
+            const clicks = evts.filter(e => e.type === 'click').length;
+            const moves = evts.filter(e => e.type === 'mouseMove').length;
+            const tsList = evts.map(eventTs).filter(Boolean);
+            const starts = state.sessions.map(sessionStart).filter(Boolean);
+            const first = Math.min(...starts, ...tsList);
+            const last = Math.max(...starts, ...tsList);
+            const browsers = new Set(state.sessions.map(s => parseUA(s.info?.userAgent).browser));
+
+            const cards = [
+                { label: 'Sessions', value: state.sessions.length.toLocaleString(), sub: 'tracked page views' },
+                { label: 'Total Events', value: evts.length.toLocaleString(), sub: 'clicks + mouse moves' },
+                { label: 'Clicks', value: clicks.toLocaleString(), sub: `${evts.length ? Math.round(clicks / evts.length * 100) : 0}% of events` },
+                { label: 'Mouse Moves', value: moves.toLocaleString(), sub: `${evts.length ? Math.round(moves / evts.length * 100) : 0}% of events` },
+                { label: 'Browsers', value: browsers.size.toLocaleString(), sub: [...browsers].join(', ') || '—' },
+                { label: 'Tracking Window', value: Number.isFinite(first) ? fmtDur(last - first) : '—', sub: Number.isFinite(first) ? `${fmtDateTime(first)} → ${fmtDateTime(last)}` : 'no data yet' },
+            ];
+
+            $('#stats').innerHTML = cards.map(c => `
+                <div class="stat">
+                    <div class="label">${esc(c.label)}</div>
+                    <div class="value">${esc(c.value)}</div>
+                    <div class="sub">${esc(trunc(c.sub, 60))}</div>
+                </div>`).join('');
+        }
+
+        // Pick a "nice" bucket size so we get roughly 10–50 buckets
+        function pickBucketSize(spanMs) {
+            const steps = [
+                10e3, 30e3, 60e3, 5 * 60e3, 15 * 60e3, 30 * 60e3,
+                3600e3, 3 * 3600e3, 6 * 3600e3, 12 * 3600e3,
+                86400e3, 7 * 86400e3,
+            ];
+            for (const s of steps) if (spanMs / s <= 50) return s;
+            return steps.at(-1);
+        }
+
+        function renderTimeline() {
+            const { ctx, w, h } = prepCanvas($('#timeline'));
+            const pts = state.events.map(e => ({ ts: eventTs(e), type: e.type }))
+                .filter(p => p.ts != null).sort((a, b) => a.ts - b.ts);
+
+            if (pts.length < 2) {
+                ctx.fillStyle = '#8494ab';
+                ctx.font = '13px system-ui';
+                ctx.textAlign = 'center';
+                ctx.fillText('Not enough timestamped events to plot', w / 2, h / 2);
+                return;
+            }
+
+            const min = pts[0].ts, max = pts.at(-1).ts;
+            const span = Math.max(max - min, 1000);
+            const bucket = pickBucketSize(span);
+            const n = Math.max(2, Math.ceil(span / bucket) + 1);
+            const counts = new Array(n).fill(0);
+            const clickTs = [];
+            for (const p of pts) {
+                counts[Math.min(n - 1, Math.floor((p.ts - min) / bucket))]++;
+                if (p.type === 'click') clickTs.push(p.ts);
+            }
+            const maxC = Math.max(...counts, 1);
+
+            const padL = 42, padR = 12, padT = 12, padB = 26;
+            const pw = w - padL - padR, ph = h - padT - padB;
+            const X = (ts) => padL + ((ts - min) / span) * pw;
+            const Y = (c) => padT + ph - (c / maxC) * ph;
+
+            // gridlines + y labels
+            ctx.strokeStyle = '#1e293b';
+            ctx.fillStyle = '#8494ab';
+            ctx.font = '10px system-ui';
+            ctx.textAlign = 'right';
+            ctx.lineWidth = 1;
+            const yTicks = 4;
+            for (let i = 0; i <= yTicks; i++) {
+                const c = Math.round(maxC * i / yTicks);
+                const y = Y(c);
+                ctx.beginPath(); ctx.moveTo(padL, y); ctx.lineTo(w - padR, y); ctx.stroke();
+                ctx.fillText(c, padL - 6, y + 3);
+            }
+
+            // area + line
+            ctx.beginPath();
+            counts.forEach((c, i) => {
+                const x = padL + (i / (n - 1)) * pw;
+                i === 0 ? ctx.moveTo(x, Y(c)) : ctx.lineTo(x, Y(c));
+            });
+            const grad = ctx.createLinearGradient(0, padT, 0, padT + ph);
+            grad.addColorStop(0, 'rgba(91,140,255,0.35)');
+            grad.addColorStop(1, 'rgba(91,140,255,0.02)');
+            ctx.lineTo(padL + pw, padT + ph);
+            ctx.lineTo(padL, padT + ph);
+            ctx.closePath();
+            ctx.fillStyle = grad;
+            ctx.fill();
+
+            ctx.beginPath();
+            counts.forEach((c, i) => {
+                const x = padL + (i / (n - 1)) * pw;
+                i === 0 ? ctx.moveTo(x, Y(c)) : ctx.lineTo(x, Y(c));
+            });
+            ctx.strokeStyle = '#5b8cff';
+            ctx.lineWidth = 1.8;
+            ctx.stroke();
+
+            // click rug along the bottom
+            ctx.strokeStyle = 'rgba(255,107,107,0.9)';
+            ctx.lineWidth = 2;
+            for (const ts of clickTs) {
+                const x = X(ts);
+                ctx.beginPath(); ctx.moveTo(x, padT + ph); ctx.lineTo(x, padT + ph - 7); ctx.stroke();
+            }
+
+            // x labels
+            ctx.fillStyle = '#8494ab';
+            ctx.textAlign = 'center';
+            ctx.font = '10px system-ui';
+            const labelEvery = Math.max(1, Math.floor(n / 6));
+            for (let i = 0; i < n; i += labelEvery) {
+                const ts = min + i * bucket;
+                const label = bucket >= 86400e3
+                    ? new Date(ts).toLocaleDateString([], { month: 'short', day: 'numeric' })
+                    : fmtTime(ts);
+                ctx.fillText(label, padL + (i / (n - 1)) * pw, h - 8);
+            }
+        }
+
+        function barRows(container, entries, colorFor) {
+            const max = Math.max(...entries.map(([, v]) => v), 1);
+            container.innerHTML = entries.length ? entries.map(([k, v]) => `
+                <div class="bar-row">
+                    <div class="bar-label"><span>${esc(k)}</span><span class="count">${v.toLocaleString()}</span></div>
+                    <div class="bar-track"><div class="bar-fill" style="width:${(v / max * 100).toFixed(1)}%;background:${colorFor(k)}"></div></div>
+                </div>`).join('')
+                : '<div class="empty">No data</div>';
+        }
+
+        function renderBreakdowns() {
+            const types = {};
+            for (const e of state.events) types[e.type || 'unknown'] = (types[e.type || 'unknown'] || 0) + 1;
+            const typeColors = { click: 'var(--click)', mouseMove: 'var(--move)' };
+            barRows($('#typeBreakdown'), Object.entries(types).sort((a, b) => b[1] - a[1]),
+                k => typeColors[k] || 'var(--accent)');
+
+            const browsers = {};
+            for (const s of state.sessions) {
+                const b = parseUA(s.info?.userAgent).browser;
+                browsers[b] = (browsers[b] || 0) + 1;
+            }
+            barRows($('#browserBreakdown'), Object.entries(browsers).sort((a, b) => b[1] - a[1]),
+                () => 'var(--green)');
+        }
+
+        function renderSessionsTable() {
+            const tbody = $('#sessionsTable tbody');
+            if (!state.sessions.length) {
+                tbody.innerHTML = '<tr><td colspan="10" class="empty">No sessions yet — open the tracked page (index.html) and interact with it.</td></tr>';
+                return;
+            }
+
+            const perSession = {};
+            for (const e of state.events) {
+                perSession[e.sessionId] ??= { total: 0, click: 0, mouseMove: 0, lastTs: null };
+                const p = perSession[e.sessionId];
+                p.total++;
+                if (p[e.type] != null) p[e.type]++;
+                const ts = eventTs(e);
+                if (ts != null) p.lastTs = Math.max(p.lastTs ?? 0, ts);
+            }
+
+            tbody.innerHTML = state.sessions.slice().sort((a, b) => sessionStart(b) - sessionStart(a)).map(s => {
+                const p = perSession[s.id] || { total: 0, click: 0, mouseMove: 0, lastTs: null };
+                const start = sessionStart(s);
+                const { browser, os } = parseUA(s.info?.userAgent);
+                const dur = p.lastTs ? p.lastTs - start : null;
+                return `
+                <tr class="session-row ${s.id === state.selectedSession ? 'selected' : ''}" data-id="${esc(s.id)}">
+                    <td class="mono" title="${esc(s.id)}">${esc(shortId(s.id))}</td>
+                    <td>${esc(fmtDateTime(start))}</td>
+                    <td>${esc(fmtDur(dur))}</td>
+                    <td>${esc(browser)}</td>
+                    <td>${esc(os)}</td>
+                    <td class="mono">${esc(s.info?.screenResolution || '—')}</td>
+                    <td title="${esc(s.info?.referrer || '')}">${esc(trunc(s.info?.referrer || '—', 24))}</td>
+                    <td style="text-align:right">${p.click}</td>
+                    <td style="text-align:right">${p.mouseMove}</td>
+                    <td style="text-align:right"><strong>${p.total}</strong></td>
+                </tr>`;
+            }).join('');
+
+            tbody.querySelectorAll('tr.session-row').forEach(tr => {
+                tr.addEventListener('click', () => {
+                    state.selectedSession = tr.dataset.id;
+                    $('#filterSession').value = tr.dataset.id;
+                    renderSessionsTable();
+                    renderSessionDetail();
+                    renderEventsTable();
+                });
+            });
+        }
+
+        function renderSessionDetail() {
+            const meta = $('#sessionMeta');
+            const s = state.sessions.find(x => x.id === state.selectedSession);
+            const canvas = $('#pathCanvas');
+            const empty = $('#pathEmpty');
+
+            if (!s) {
+                meta.innerHTML = '';
+                canvas.style.display = 'none';
+                empty.style.display = 'block';
+                empty.textContent = 'Select a session above to inspect it.';
+                return;
+            }
+
+            const evts = state.events.filter(e => e.sessionId === s.id);
+            const start = sessionStart(s);
+            const lastTs = evts.map(eventTs).filter(Boolean).at(-1);
+            const { browser, os } = parseUA(s.info?.userAgent);
+
+            meta.innerHTML = [
+                ['Session ID', s.id],
+                ['Started', fmtDateTime(start)],
+                ['Duration', fmtDur(lastTs ? lastTs - start : null)],
+                ['URL', s.info?.url || '—'],
+                ['Referrer', s.info?.referrer || '—'],
+                ['Browser', `${browser} · ${os}`],
+                ['Screen', s.info?.screenResolution || '—'],
+                ['Events', `${evts.length} (${evts.filter(e => e.type === 'click').length} clicks)`],
+            ].map(([k, v]) => `<div><span class="k">${esc(k)}:</span><span class="v">${esc(trunc(v, 80))}</span></div>`).join('');
+
+            if (!evts.length) {
+                canvas.style.display = 'none';
+                empty.style.display = 'block';
+                empty.textContent = 'No events recorded for this session.';
+                return;
+            }
+            canvas.style.display = 'block';
+            empty.style.display = 'none';
+            drawPath(canvas, evts, parseRes(s.info?.screenResolution));
+        }
+
+        // Fit data bounds into canvas ("contain"), returns transform fn + box
+        function fitTransform(w, h, maxX, maxY, pad = 14) {
+            const scale = Math.min((w - 2 * pad) / maxX, (h - 2 * pad) / maxY);
+            const ox = (w - maxX * scale) / 2;
+            const oy = (h - maxY * scale) / 2;
+            return {
+                scale, ox, oy,
+                bw: maxX * scale, bh: maxY * scale,
+                tf: (x, y) => [ox + x * scale, oy + y * scale],
+            };
+        }
+
+        function drawPath(canvas, evts, res) {
+            const { ctx, w, h } = prepCanvas(canvas);
+            const moves = evts.filter(e => e.type === 'mouseMove' && eventCoords(e))
+                .map(e => ({ ...eventCoords(e), ts: eventTs(e) }))
+                .sort((a, b) => (a.ts ?? 0) - (b.ts ?? 0));
+            const clicks = evts.filter(e => e.type === 'click' && eventCoords(e))
+                .map(e => eventCoords(e));
+
+            const maxX = Math.max(res?.w || 0, ...moves.map(p => p.x), ...clicks.map(p => p.x), 100);
+            const maxY = Math.max(res?.h || 0, ...moves.map(p => p.y), ...clicks.map(p => p.y), 100);
+            const { tf, ox, oy, bw, bh } = fitTransform(w, h, maxX, maxY);
+
+            // page bounds
+            ctx.strokeStyle = '#24304a';
+            ctx.lineWidth = 1;
+            ctx.strokeRect(ox, oy, bw, bh);
+
+            // mouse path
+            if (moves.length > 1) {
+                ctx.beginPath();
+                moves.forEach((p, i) => {
+                    const [x, y] = tf(p.x, p.y);
+                    i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+                });
+                ctx.strokeStyle = 'rgba(77,208,225,0.55)';
+                ctx.lineWidth = 1.2;
+                ctx.stroke();
+            }
+            ctx.fillStyle = 'rgba(77,208,225,0.5)';
+            for (const p of moves) {
+                const [x, y] = tf(p.x, p.y);
+                ctx.beginPath(); ctx.arc(x, y, 1.6, 0, Math.PI * 2); ctx.fill();
+            }
+
+            // clicks
+            for (const p of clicks) {
+                const [x, y] = tf(p.x, p.y);
+                ctx.beginPath(); ctx.arc(x, y, 7, 0, Math.PI * 2);
+                ctx.strokeStyle = 'rgba(255,107,107,0.8)'; ctx.lineWidth = 1.5; ctx.stroke();
+                ctx.beginPath(); ctx.arc(x, y, 3, 0, Math.PI * 2);
+                ctx.fillStyle = '#ff6b6b'; ctx.fill();
+            }
+
+            // start marker
+            if (moves.length) {
+                const [x, y] = tf(moves[0].x, moves[0].y);
+                ctx.beginPath(); ctx.arc(x, y, 5, 0, Math.PI * 2);
+                ctx.fillStyle = '#34d399'; ctx.fill();
+                ctx.fillStyle = '#34d399';
+                ctx.font = '10px system-ui';
+                ctx.fillText('start', x + 8, y - 6);
+            }
+        }
+
+        function renderHeatmap() {
+            const { ctx, w, h } = prepCanvas($('#heatmap'));
+            const showMouse = $('#heatMouse').checked;
+            const showClicks = $('#heatClicks').checked;
+
+            const mousePts = showMouse
+                ? state.events.filter(e => e.type === 'mouseMove' && eventCoords(e)).map(eventCoords) : [];
+            const clickPts = showClicks
+                ? state.events.filter(e => e.type === 'click' && eventCoords(e)).map(eventCoords) : [];
+
+            const all = [...mousePts, ...clickPts];
+            if (!all.length) {
+                ctx.fillStyle = '#8494ab';
+                ctx.font = '13px system-ui';
+                ctx.textAlign = 'center';
+                ctx.fillText('No coordinate data to display', w / 2, h / 2);
+                return;
+            }
+
+            const maxX = Math.max(...all.map(p => p.x), 100);
+            const maxY = Math.max(...all.map(p => p.y), 100);
+            const { tf, ox, oy, bw, bh } = fitTransform(w, h, maxX, maxY);
+
+            ctx.strokeStyle = '#24304a';
+            ctx.lineWidth = 1;
+            ctx.strokeRect(ox, oy, bw, bh);
+
+            ctx.save();
+            ctx.beginPath();
+            ctx.rect(ox, oy, bw, bh);
+            ctx.clip();
+            ctx.globalCompositeOperation = 'lighter';
+
+            const blob = (x, y, r, color) => {
+                const [px, py] = tf(x, y);
+                const g = ctx.createRadialGradient(px, py, 0, px, py, r);
+                g.addColorStop(0, color);
+                g.addColorStop(1, 'rgba(0,0,0,0)');
+                ctx.fillStyle = g;
+                ctx.beginPath(); ctx.arc(px, py, r, 0, Math.PI * 2); ctx.fill();
+            };
+
+            const r = Math.max(10, Math.min(bw, bh) / 12);
+            for (const p of mousePts) blob(p.x, p.y, r, 'rgba(77,208,225,0.10)');
+            for (const p of clickPts) blob(p.x, p.y, r * 1.4, 'rgba(255,107,107,0.22)');
+            ctx.restore();
+
+            // legend
+            ctx.font = '10px system-ui';
+            ctx.textAlign = 'left';
+            ctx.fillStyle = '#8494ab';
+            ctx.fillText(`${mousePts.length} moves · ${clickPts.length} clicks · bounds ${Math.round(maxX)}×${Math.round(maxY)}`, ox + 4, oy + bh + 14);
+        }
+
+        function populateSessionFilter() {
+            const sel = $('#filterSession');
+            const current = sel.value;
+            const opts = ['<option value="">All sessions</option>']
+                .concat(state.sessions.slice().sort((a, b) => sessionStart(b) - sessionStart(a))
+                    .map(s => `<option value="${esc(s.id)}">${esc(shortId(s.id))} — ${esc(fmtDateTime(sessionStart(s)))}</option>`));
+            sel.innerHTML = opts.join('');
+            if ([...sel.options].some(o => o.value === current)) sel.value = current;
+        }
+
+        function eventDetails(e) {
+            const i = e.info || {};
+            if (e.type === 'click') {
+                return `“${trunc(i.clickedText, 70) || 'no text'}” @ (${i.xPos}, ${i.yPos})`;
+            }
+            if (e.type === 'mouseMove') {
+                return `(${i.x}, ${i.y}) over “${trunc(i.element, 50)}”`;
+            }
+            return trunc(JSON.stringify(i), 90);
+        }
+
+        const EVENT_ROW_CAP = 1000;
+
+        function renderEventsTable() {
+            const fSession = $('#filterSession').value;
+            const fType = $('#filterType').value;
+            const fSearch = $('#filterSearch').value.trim().toLowerCase();
+
+            let evts = state.events.filter(e =>
+                (!fSession || e.sessionId === fSession) &&
+                (!fType || e.type === fType));
+
+            if (fSearch) {
+                evts = evts.filter(e =>
+                    e.sessionId.toLowerCase().includes(fSearch) ||
+                    eventDetails(e).toLowerCase().includes(fSearch));
+            }
+
+            $('#eventCount').textContent = `${evts.length.toLocaleString()} events` +
+                (evts.length > EVENT_ROW_CAP ? ` (showing latest ${EVENT_ROW_CAP})` : '');
+
+            const shown = evts.slice(-EVENT_ROW_CAP).reverse(); // newest first
+            const tbody = $('#eventsTable tbody');
+
+            if (!shown.length) {
+                tbody.innerHTML = '<tr><td colspan="4" class="empty">No events match the current filters.</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = shown.map(e => {
+                const ts = eventTs(e);
+                const pillClass = ['click', 'mouseMove'].includes(e.type) ? e.type : 'other';
+                return `
+                <tr>
+                    <td class="muted" style="white-space:nowrap">${esc(fmtDateTime(ts))}</td>
+                    <td class="mono" title="${esc(e.sessionId)}">${esc(shortId(e.sessionId))}</td>
+                    <td><span class="pill ${pillClass}">${esc(e.type || 'unknown')}</span></td>
+                    <td title="${esc(eventDetails(e))}">${esc(eventDetails(e))}</td>
+                </tr>`;
+            }).join('');
+        }
+
+        // ------------------------------------------------------------------
+        // Wiring
+        // ------------------------------------------------------------------
+        $('#refreshBtn').addEventListener('click', refresh);
+        $('#filterSession').addEventListener('change', renderEventsTable);
+        $('#filterType').addEventListener('change', renderEventsTable);
+        $('#filterSearch').addEventListener('input', renderEventsTable);
+        $('#heatMouse').addEventListener('change', renderHeatmap);
+        $('#heatClicks').addEventListener('change', renderHeatmap);
+
+        let autoTimer = null;
+        $('#autoRefresh').addEventListener('change', (e) => {
+            clearInterval(autoTimer);
+            if (e.target.checked) autoTimer = setInterval(refresh, 10000);
+        });
+
+        let resizeTimer = null;
+        window.addEventListener('resize', () => {
+            clearTimeout(resizeTimer);
+            resizeTimer = setTimeout(() => {
+                renderTimeline();
+                renderHeatmap();
+                renderSessionDetail();
+            }, 150);
+        });
+
+        refresh();
+    </script>
+</body>
+
+</html>
