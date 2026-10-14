@@ -19,7 +19,11 @@
             --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
         }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; }
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
 
         body {
             background: var(--bg);
@@ -44,7 +48,9 @@
             letter-spacing: 0.3px;
         }
 
-        header h1 span { color: var(--accent); }
+        header h1 span {
+            color: var(--accent);
+        }
 
         .header-controls {
             margin-left: auto;
@@ -59,7 +65,9 @@
             font-size: 12px;
         }
 
-        #status.error { color: var(--click); }
+        #status.error {
+            color: var(--click);
+        }
 
         button {
             background: var(--accent);
@@ -72,7 +80,9 @@
             cursor: pointer;
         }
 
-        button:hover { filter: brightness(1.15); }
+        button:hover {
+            filter: brightness(1.15);
+        }
 
         label.toggle {
             display: flex;
@@ -123,8 +133,16 @@
             margin-bottom: 6px;
         }
 
-        .stat .value { font-size: 24px; font-weight: 700; }
-        .stat .sub { color: var(--muted); font-size: 11px; margin-top: 4px; }
+        .stat .value {
+            font-size: 24px;
+            font-weight: 700;
+        }
+
+        .stat .sub {
+            color: var(--muted);
+            font-size: 11px;
+            margin-top: 4px;
+        }
 
         .row {
             display: grid;
@@ -132,20 +150,43 @@
             margin-bottom: 16px;
         }
 
-        .row-2-1 { grid-template-columns: 2fr 1fr; }
-        .row-1-1 { grid-template-columns: 1fr 1fr; }
-
-        @media (max-width: 900px) {
-            .row-2-1, .row-1-1 { grid-template-columns: 1fr; }
+        .row-2-1 {
+            grid-template-columns: 2fr 1fr;
         }
 
-        canvas { width: 100%; display: block; }
-        #timeline { height: 220px; }
-        #heatmap { height: 340px; }
-        #pathCanvas { height: 320px; }
+        .row-1-1 {
+            grid-template-columns: 1fr 1fr;
+        }
+
+        @media (max-width: 900px) {
+
+            .row-2-1,
+            .row-1-1 {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        canvas {
+            width: 100%;
+            display: block;
+        }
+
+        #timeline {
+            height: 220px;
+        }
+
+        #heatmap {
+            height: 340px;
+        }
+
+        #pathCanvas {
+            height: 320px;
+        }
 
         /* ---------- Breakdown bars ---------- */
-        .bar-row { margin-bottom: 10px; }
+        .bar-row {
+            margin-bottom: 10px;
+        }
 
         .bar-row .bar-label {
             display: flex;
@@ -154,7 +195,9 @@
             margin-bottom: 4px;
         }
 
-        .bar-row .bar-label .count { color: var(--muted); }
+        .bar-row .bar-label .count {
+            color: var(--muted);
+        }
 
         .bar-track {
             background: #0d1320;
@@ -163,7 +206,10 @@
             overflow: hidden;
         }
 
-        .bar-fill { height: 100%; border-radius: 4px; }
+        .bar-fill {
+            height: 100%;
+            border-radius: 4px;
+        }
 
         /* ---------- Tables ---------- */
         table {
@@ -193,12 +239,26 @@
             white-space: nowrap;
         }
 
-        tr.session-row { cursor: pointer; }
-        tr.session-row:hover td { background: #161f31; }
-        tr.session-row.selected td { background: rgba(91, 140, 255, 0.12); }
+        tr.session-row {
+            cursor: pointer;
+        }
 
-        .mono { font-family: var(--mono); font-size: 12px; }
-        .muted { color: var(--muted); }
+        tr.session-row:hover td {
+            background: #161f31;
+        }
+
+        tr.session-row.selected td {
+            background: rgba(91, 140, 255, 0.12);
+        }
+
+        .mono {
+            font-family: var(--mono);
+            font-size: 12px;
+        }
+
+        .muted {
+            color: var(--muted);
+        }
 
         .pill {
             display: inline-block;
@@ -208,9 +268,20 @@
             font-weight: 600;
         }
 
-        .pill.click { background: rgba(255, 107, 107, 0.15); color: var(--click); }
-        .pill.mouseMove { background: rgba(77, 208, 225, 0.15); color: var(--move); }
-        .pill.other { background: rgba(132, 148, 171, 0.15); color: var(--muted); }
+        .pill.click {
+            background: rgba(255, 107, 107, 0.15);
+            color: var(--click);
+        }
+
+        .pill.mouseMove {
+            background: rgba(77, 208, 225, 0.15);
+            color: var(--move);
+        }
+
+        .pill.other {
+            background: rgba(132, 148, 171, 0.15);
+            color: var(--muted);
+        }
 
         /* ---------- Event stream controls ---------- */
         .filters {
@@ -221,7 +292,8 @@
             margin-bottom: 12px;
         }
 
-        select, input[type="text"] {
+        select,
+        input[type="text"] {
             background: #0d1320;
             color: var(--text);
             border: 1px solid var(--card-border);
@@ -230,7 +302,9 @@
             font-size: 13px;
         }
 
-        input[type="text"] { min-width: 220px; }
+        input[type="text"] {
+            min-width: 220px;
+        }
 
         .table-scroll {
             max-height: 420px;
@@ -246,10 +320,21 @@
             font-size: 12px;
         }
 
-        .meta-grid .k { color: var(--muted); margin-right: 6px; }
-        .meta-grid .v { font-family: var(--mono); word-break: break-all; }
+        .meta-grid .k {
+            color: var(--muted);
+            margin-right: 6px;
+        }
 
-        .heat-toggles { display: flex; gap: 14px; margin-bottom: 10px; }
+        .meta-grid .v {
+            font-family: var(--mono);
+            word-break: break-all;
+        }
+
+        .heat-toggles {
+            display: flex;
+            gap: 14px;
+            margin-bottom: 10px;
+        }
 
         .banner {
             background: rgba(255, 107, 107, 0.1);
@@ -269,9 +354,19 @@
             font-size: 13px;
         }
 
-        ::-webkit-scrollbar { width: 10px; height: 10px; }
-        ::-webkit-scrollbar-thumb { background: #24304a; border-radius: 5px; }
-        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar {
+            width: 10px;
+            height: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #24304a;
+            border-radius: 5px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
     </style>
 </head>
 
@@ -309,7 +404,8 @@
     <!-- Sessions table -->
     <section class="row">
         <div class="card">
-            <h2>Sessions <span class="muted" style="text-transform:none;font-weight:400">(click a row to inspect)</span></h2>
+            <h2>Sessions <span class="muted" style="text-transform:none;font-weight:400">(click a row to inspect)</span>
+            </h2>
             <div class="table-scroll">
                 <table id="sessionsTable">
                     <thead>
@@ -341,10 +437,13 @@
             <div class="empty" id="pathEmpty" style="display:none">No events recorded for this session.</div>
         </div>
         <div class="card">
-            <h2>Interaction Heatmap <span class="muted" style="text-transform:none;font-weight:400">(all sessions)</span></h2>
+            <h2>Interaction Heatmap <span class="muted" style="text-transform:none;font-weight:400">(all
+                    sessions)</span></h2>
             <div class="heat-toggles">
-                <label class="toggle"><input type="checkbox" id="heatMouse" checked> <span style="color:var(--move)">Mouse moves</span></label>
-                <label class="toggle"><input type="checkbox" id="heatClicks" checked> <span style="color:var(--click)">Clicks</span></label>
+                <label class="toggle"><input type="checkbox" id="heatMouse" checked> <span
+                        style="color:var(--move)">Mouse moves</span></label>
+                <label class="toggle"><input type="checkbox" id="heatClicks" checked> <span
+                        style="color:var(--click)">Clicks</span></label>
             </div>
             <canvas id="heatmap"></canvas>
         </div>
@@ -355,7 +454,9 @@
         <div class="card">
             <h2>Event Stream</h2>
             <div class="filters">
-                <select id="filterSession"><option value="">All sessions</option></select>
+                <select id="filterSession">
+                    <option value="">All sessions</option>
+                </select>
                 <select id="filterType">
                     <option value="">All types</option>
                     <option value="click">click</option>
@@ -399,7 +500,7 @@
         // ------------------------------------------------------------------
         const $ = (sel) => document.querySelector(sel);
         const esc = (s) => String(s ?? '').replace(/[&<>"']/g,
-            c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+            c => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[c]));
 
         function trunc(s, n = 60) {
             s = String(s ?? '').replace(/\s+/g, ' ').trim();
@@ -461,18 +562,18 @@
             else if (/iPhone|iPad|iPod/.test(ua)) os = 'iOS';
             else if (/Mac OS X/.test(ua)) os = 'macOS';
             else if (/Linux/.test(ua)) os = 'Linux';
-            return { browser, os };
+            return {browser, os};
         }
 
         function parseRes(res) {
             const m = String(res || '').match(/(\d+)\s*x\s*(\d+)/i);
-            return m ? { w: +m[1], h: +m[2] } : null;
+            return m ? {w: +m[1], h: +m[2]} : null;
         }
 
         function eventCoords(e) {
             const i = e.info || {};
-            if (typeof i.xPos === 'number') return { x: i.xPos, y: i.yPos };
-            if (typeof i.x === 'number') return { x: i.x, y: i.y };
+            if (typeof i.xPos === 'number') return {x: i.xPos, y: i.yPos};
+            if (typeof i.x === 'number') return {x: i.x, y: i.y};
             return null;
         }
 
@@ -488,7 +589,7 @@
             const ctx = cv.getContext('2d');
             ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
             ctx.clearRect(0, 0, w, h);
-            return { ctx, w, h };
+            return {ctx, w, h};
         }
 
         // ------------------------------------------------------------------
@@ -550,12 +651,12 @@
             const browsers = new Set(state.sessions.map(s => parseUA(s.info?.userAgent).browser));
 
             const cards = [
-                { label: 'Sessions', value: state.sessions.length.toLocaleString(), sub: 'tracked page views' },
-                { label: 'Total Events', value: evts.length.toLocaleString(), sub: 'clicks + mouse moves' },
-                { label: 'Clicks', value: clicks.toLocaleString(), sub: `${evts.length ? Math.round(clicks / evts.length * 100) : 0}% of events` },
-                { label: 'Mouse Moves', value: moves.toLocaleString(), sub: `${evts.length ? Math.round(moves / evts.length * 100) : 0}% of events` },
-                { label: 'Browsers', value: browsers.size.toLocaleString(), sub: [...browsers].join(', ') || '—' },
-                { label: 'Tracking Window', value: Number.isFinite(first) ? fmtDur(last - first) : '—', sub: Number.isFinite(first) ? `${fmtDateTime(first)} → ${fmtDateTime(last)}` : 'no data yet' },
+                {label: 'Sessions', value: state.sessions.length.toLocaleString(), sub: 'tracked page views'},
+                {label: 'Total Events', value: evts.length.toLocaleString(), sub: 'clicks + mouse moves'},
+                {label: 'Clicks', value: clicks.toLocaleString(), sub: `${evts.length ? Math.round(clicks / evts.length * 100) : 0}% of events`},
+                {label: 'Mouse Moves', value: moves.toLocaleString(), sub: `${evts.length ? Math.round(moves / evts.length * 100) : 0}% of events`},
+                {label: 'Browsers', value: browsers.size.toLocaleString(), sub: [...browsers].join(', ') || '—'},
+                {label: 'Tracking Window', value: Number.isFinite(first) ? fmtDur(last - first) : '—', sub: Number.isFinite(first) ? `${fmtDateTime(first)} → ${fmtDateTime(last)}` : 'no data yet'},
             ];
 
             $('#stats').innerHTML = cards.map(c => `
@@ -578,8 +679,8 @@
         }
 
         function renderTimeline() {
-            const { ctx, w, h } = prepCanvas($('#timeline'));
-            const pts = state.events.map(e => ({ ts: eventTs(e), type: e.type }))
+            const {ctx, w, h} = prepCanvas($('#timeline'));
+            const pts = state.events.map(e => ({ts: eventTs(e), type: e.type}))
                 .filter(p => p.ts != null).sort((a, b) => a.ts - b.ts);
 
             if (pts.length < 2) {
@@ -661,7 +762,7 @@
             for (let i = 0; i < n; i += labelEvery) {
                 const ts = min + i * bucket;
                 const label = bucket >= 86400e3
-                    ? new Date(ts).toLocaleDateString([], { month: 'short', day: 'numeric' })
+                    ? new Date(ts).toLocaleDateString([], {month: 'short', day: 'numeric'})
                     : fmtTime(ts);
                 ctx.fillText(label, padL + (i / (n - 1)) * pw, h - 8);
             }
@@ -680,7 +781,7 @@
         function renderBreakdowns() {
             const types = {};
             for (const e of state.events) types[e.type || 'unknown'] = (types[e.type || 'unknown'] || 0) + 1;
-            const typeColors = { click: 'var(--click)', mouseMove: 'var(--move)' };
+            const typeColors = {click: 'var(--click)', mouseMove: 'var(--move)'};
             barRows($('#typeBreakdown'), Object.entries(types).sort((a, b) => b[1] - a[1]),
                 k => typeColors[k] || 'var(--accent)');
 
@@ -702,7 +803,7 @@
 
             const perSession = {};
             for (const e of state.events) {
-                perSession[e.sessionId] ??= { total: 0, click: 0, mouseMove: 0, lastTs: null };
+                perSession[e.sessionId] ??= {total: 0, click: 0, mouseMove: 0, lastTs: null};
                 const p = perSession[e.sessionId];
                 p.total++;
                 if (p[e.type] != null) p[e.type]++;
@@ -711,9 +812,9 @@
             }
 
             tbody.innerHTML = state.sessions.slice().sort((a, b) => sessionStart(b) - sessionStart(a)).map(s => {
-                const p = perSession[s.id] || { total: 0, click: 0, mouseMove: 0, lastTs: null };
+                const p = perSession[s.id] || {total: 0, click: 0, mouseMove: 0, lastTs: null};
                 const start = sessionStart(s);
-                const { browser, os } = parseUA(s.info?.userAgent);
+                const {browser, os} = parseUA(s.info?.userAgent);
                 const dur = p.lastTs ? p.lastTs - start : null;
                 return `
                 <tr class="session-row ${s.id === state.selectedSession ? 'selected' : ''}" data-id="${esc(s.id)}">
@@ -758,7 +859,7 @@
             const evts = state.events.filter(e => e.sessionId === s.id);
             const start = sessionStart(s);
             const lastTs = evts.map(eventTs).filter(Boolean).at(-1);
-            const { browser, os } = parseUA(s.info?.userAgent);
+            const {browser, os} = parseUA(s.info?.userAgent);
 
             meta.innerHTML = [
                 ['Session ID', s.id],
@@ -795,16 +896,16 @@
         }
 
         function drawPath(canvas, evts, res) {
-            const { ctx, w, h } = prepCanvas(canvas);
+            const {ctx, w, h} = prepCanvas(canvas);
             const moves = evts.filter(e => e.type === 'mouseMove' && eventCoords(e))
-                .map(e => ({ ...eventCoords(e), ts: eventTs(e) }))
+                .map(e => ({...eventCoords(e), ts: eventTs(e)}))
                 .sort((a, b) => (a.ts ?? 0) - (b.ts ?? 0));
             const clicks = evts.filter(e => e.type === 'click' && eventCoords(e))
                 .map(e => eventCoords(e));
 
             const maxX = Math.max(res?.w || 0, ...moves.map(p => p.x), ...clicks.map(p => p.x), 100);
             const maxY = Math.max(res?.h || 0, ...moves.map(p => p.y), ...clicks.map(p => p.y), 100);
-            const { tf, ox, oy, bw, bh } = fitTransform(w, h, maxX, maxY);
+            const {tf, ox, oy, bw, bh} = fitTransform(w, h, maxX, maxY);
 
             // page bounds
             ctx.strokeStyle = '#24304a';
@@ -849,7 +950,7 @@
         }
 
         function renderHeatmap() {
-            const { ctx, w, h } = prepCanvas($('#heatmap'));
+            const {ctx, w, h} = prepCanvas($('#heatmap'));
             const showMouse = $('#heatMouse').checked;
             const showClicks = $('#heatClicks').checked;
 
@@ -869,7 +970,7 @@
 
             const maxX = Math.max(...all.map(p => p.x), 100);
             const maxY = Math.max(...all.map(p => p.y), 100);
-            const { tf, ox, oy, bw, bh } = fitTransform(w, h, maxX, maxY);
+            const {tf, ox, oy, bw, bh} = fitTransform(w, h, maxX, maxY);
 
             ctx.strokeStyle = '#24304a';
             ctx.lineWidth = 1;

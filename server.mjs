@@ -29,43 +29,43 @@ app.post('/init', (req, res) => {
 });
 
 app.post('/track', (req, res) => {
-  const { sessionId, type, ...rest } = req.body;
+    const { sessionId, type, ...rest } = req.body;
 
-  // Store remaining event fields inside the 'info' column as a JSON string
-  const infoString = JSON.stringify(rest);
+    // Store remaining event fields inside the 'info' column as a JSON string
+    const infoString = JSON.stringify(rest);
 
-  try {
-    watchChange.run(sessionId, type, infoString);
-    res.json({ ok: true });
-  } catch (err) {
-    console.error('Failed to insert watch data:', err);
-    res.status(500).json({ error: 'Database insert failed' });
-  }
+    try {
+        watchChange.run(sessionId, type, infoString);
+        res.json({ ok: true });
+    } catch (err) {
+        console.error('Failed to insert watch data:', err);
+        res.status(500).json({ error: 'Database insert failed' });
+    }
 });
 
 // Dashboard data endpoint: returns all sessions with their events, info parsed from JSON.
 // Optional ?limit=N caps the number of most recent events returned (default 10000).
 app.get('/api/data', (req, res) => {
-  const limit = Math.max(1, Math.min(100000, parseInt(req.query.limit, 10) || 10000));
+    const limit = Math.max(1, Math.min(100000, parseInt(req.query.limit, 10) || 10000));
 
-  try {
-    const sessions = db.prepare('SELECT id, info FROM sessions ORDER BY id ASC').all()
-      .map(s => ({ id: s.id, info: safeJsonParse(s.info) }));
+    try {
+        const sessions = db.prepare('SELECT id, info FROM sessions ORDER BY id ASC').all()
+            .map(s => ({ id: s.id, info: safeJsonParse(s.info) }));
 
-    const events = db.prepare(`
+        const events = db.prepare(`
       SELECT rowid AS rowId, sessionId, type, info
       FROM watchData
       ORDER BY rowid DESC
       LIMIT ?
     `).all(limit)
-      .map(e => ({ ...e, info: safeJsonParse(e.info) }))
-      .reverse(); // back to chronological order
+            .map(e => ({ ...e, info: safeJsonParse(e.info) }))
+            .reverse(); // back to chronological order
 
-    res.json({ sessions, events });
-  } catch (err) {
-    console.error('Failed to read tracker data:', err);
-    res.status(500).json({ error: 'Database read failed' });
-  }
+        res.json({ sessions, events });
+    } catch (err) {
+        console.error('Failed to read tracker data:', err);
+        res.status(500).json({ error: 'Database read failed' });
+    }
 });
 
 // Serve static files (index.html, dashboard.html, tracker.js) so the whole
